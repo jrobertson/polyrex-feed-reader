@@ -31,7 +31,7 @@ class PolyrexFeedReader
     if File.exists? @file_path then
       @feeds = Polyrex.new @file_path
     else
-      schema = 'feeds/column[id]/feed[rss_url,title,important,occurrence,recent,url, xhtml, xhtml_mobile, last_modified]/item[title,link,description]'
+      schema = 'feeds/column[id]/feed[rss_url,title,important,occurrence,recent,url, xhtml, xhtml_mobile, last_modified, last_accessed]/item[title,link,description]'
       @feeds = Polyrex.new schema
       @feeds.save @file_path
     end
@@ -44,27 +44,8 @@ class PolyrexFeedReader
   def read()
     @feeds.records.each do |col|
       col.records.each do |feed|
-
-        if scheduled? feed.occurrence then
-
-          rss_doc = Document.new(open(feed.rss_url, 'UserAgent' => 'PolyrexFeedReader').read)
-          rss_items = XPath.match(rss_doc.root, '//item')[0..2]
-
-          if feed.records.length <= 0 then
-            # create the items
-            k = 3 - feed.records.length
-            k.times {|x| feed.create.item}
-
-            fetch_items(rss_items, feed)
-
-          else
-            if feed.item[0] != rss_items[0].text('title').to_s then
-              fetch_items(rss_items, feed)
-            else
-              feed.recent = recency(feed.last_modified)
-            end
-          end
-        end
+        fetch_feed(item)
+        feed.last_accessed = Time.now   
       end
       col.records.sort_by!{|x| -Time.parse(x.text('summary/last_modified').to_s).to_i}
 
@@ -109,8 +90,39 @@ class PolyrexFeedReader
 
     buffer
   end
+  
+  def read_feed(feed_name)
+    feed = @feeds.find_by_feed_title(feed_name)
+    fetch_feed(feed)
+    @feeds.save @file_path
+  end
 
-  private  
+  private
+  
+  def fetch_feed(feed)
+    if scheduled? feed.occurrence and recency(feed.last_accessed) != 'hot' then
+
+      rss_doc = Document.new(open(feed.rss_url, 'UserAgent' => 'PolyrexFeedReader').read)
+      rss_items = XPath.match(rss_doc.root, '//item')[0..2]
+
+      if feed.records.length <= 0 then
+        # create the items
+        k = 3 - feed.records.length
+        k.times {|x| feed.create.item}
+
+        fetch_items(rss_items, feed)
+
+      else
+
+        if REXML::Text::unnormalize(feed.item[0].title) != rss_items[0].text('title').to_s then
+
+          fetch_items(rss_items, feed)
+        else
+          feed.recent = recency(feed.last_modified)
+        end
+      end
+    end    
+  end
 
   def recency(time)  
     case (Time.now - Time.parse(time))
@@ -157,3 +169,4 @@ class PolyrexFeedReader
   end
 
 end
+
