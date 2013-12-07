@@ -1,13 +1,12 @@
 Gem::Specification.new do |s|
   s.name = 'polyrex-feed-reader'
-  s.version = '0.3.3'
-  s.summary = 'polyrex-feed-reader'
-    s.authors = ['James Robertson']
-  s.files = Dir['lib/**/*.rb']
+  s.version = '0.5.0'
+  s.summary = 'Fetches RSS feeds from a Polyrex file and displays each feed summary on an HTML page'
+  s.authors = ['James Robertson']
+  s.files = Dir['lib/**/*.rb', 'lib/feeds.xsl']
   s.add_dependency('polyrex')
-  s.add_dependency('builder')
-  s.add_dependency('chronic')
- 
+  s.add_dependency('rss_to_dynarex')
+  s.add_dependency('nokogiri')
   s.signing_key = '../privatekeys/polyrex-feed-reader.pem'
   s.cert_chain  = ['gem-public_cert.pem']
   s.license = 'MIT'

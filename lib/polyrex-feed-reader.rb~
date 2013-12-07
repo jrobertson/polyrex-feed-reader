@@ -45,7 +45,6 @@ class PolyrexFeedReader
     @feeds.records.each do |col|
       col.records.each do |feed|
         fetch_feed(item)
-        feed.last_accessed = Time.now   
       end
       col.records.sort_by!{|x| -Time.parse(x.text('summary/last_modified').to_s).to_i}
 
@@ -121,6 +120,7 @@ class PolyrexFeedReader
           feed.recent = recency(feed.last_modified)
         end
       end
+      feed.last_accessed = Time.now   
     end    
   end
 
