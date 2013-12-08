@@ -34,74 +34,74 @@ class PolyrexFeedReader
 
   def fetch_feeds()
 
-    feeds = @polyrex.xpath('//column/records/feed/summary')
+    feeds = @polyrex.xpath('//column/records/section/records/feed/summary')
 
     feeds.each do |feed|
 
-      puts "fetching %s ..." % feed.text('rss_url').inspect
+      puts "fetching %s " % feed.text('rss_url').inspect
 
       rtd = RSStoDynarex.new feed.text('rss_url')
       dynarex = rtd.to_dynarex
       dynarex.save "%s.xml" % feed.text('title')\
-                          .downcase.gsub(/\s/,'').gsub('-','_')
+                          .downcase.gsub(/\s/,'').gsub(/\W/,'_')
     end
-  end
-
-  def datetimestamp()
-
-    hour, minutes, day, year = Time.now.to_a.values_at 2,1,3,5
-    meridian, month = Time.now.strftime("%p %b").split
-    "%d:%s%s %s %s %s" % [hour, minutes, meridian.downcase, \
-                            day.ordinal, month, year]
   end
 
   def refresh
 
     @polyrex.records.each do |column|
 
-      column.records.each do |feed|
+      column.records.each do |section| 
+   
+        section.records.each do |feed|
 
-        filename = "%s.xml" % feed.title\
-                            .downcase.gsub(/\s/,'').gsub('-','_')
+          filename = "%s.xml" % feed.title\
+                              .downcase.gsub(/\s/,'').gsub(/\W/,'_')
 
-        d = Dynarex.new filename
-        feed.last_accessed = datetimestamp()
-        feed.last_modified = datetimestamp() if feed.last_modified.empty?
+          d = Dynarex.new filename
+          feed.last_accessed = datetimestamp()
+          feed.last_modified = datetimestamp() if feed.last_modified.empty?
 
-        items = d.to_h[0..2]
+          items = d.to_h[0..2]
 
-        puts 'items.first[:title] '  + items.first[:title].inspect
-        puts 'feed.item[0].title '  + feed.item[0].title.inspect
-
-        if feed.records.length > 0 and \
-                                items.first[:title] == feed.item[0].title then
-          feed.recent = recency(feed.last_modified)
-          next 
-        end
-
-        feed.recent = '1hot'
-        feed.records.remove_all
-        items.each.with_index do |x, i|
-
-          h = {title: x[:title]}
-
-          if i == 0 then
-
-            raw_desc = CGI.unescapeHTML(x[:description]).gsub(/<\/?[^>]*>/, "")
-            desc = raw_desc.length > 300 ? raw_desc[0..296] + ' ...' : raw_desc
-            h[:description] = desc
+          if feed.records.length > 0 and \
+                                  items.first[:title] == feed.item[0].title then
+            feed.recent = recency(feed.last_modified)
+            next 
           end
 
-          feed.create.item h
+          feed.recent = '1hot'
+          feed.records.remove_all
+          items.each.with_index do |x, i|
+
+            h = {title: x[:title], link: x[:link]}
+
+            if i == 0 then
+
+              raw_desc = CGI.unescapeHTML(x[:description]).gsub(/<\/?[^>]*>/, "")
+              desc = raw_desc.length > 300 ? raw_desc[0..296] + ' ...' : raw_desc
+              h[:description] = desc
+            end
+
+            feed.create.item h
+          end
+
+          feed.last_modified = datetimestamp()
         end
-
-        feed.last_modified = datetimestamp()
-
       end
     end
   end
 
   alias update_doc refresh
+
+  def save_css(filepath='feeds.css')
+
+    lib = File.dirname(__FILE__)
+    css_buffer = File.read(lib + '/feeds.css')
+    #css_buffer = File.read('feeds.css')
+
+    File.write filepath, css_buffer
+  end
 
   def save_html(filepath='feeds.html')
 
@@ -119,6 +119,14 @@ class PolyrexFeedReader
   end
 
   private
+
+  def datetimestamp()
+
+    hour, minutes, day, year = Time.now.to_a.values_at 2,1,3,5
+    meridian, month = Time.now.strftime("%p %b").split
+    "%d:%02d%s %s %s %s" % [hour, minutes, meridian.downcase, \
+                            day.ordinal, month, year]
+  end
 
   def recency(time)
 
@@ -139,7 +147,8 @@ if __FILE__ == $0 then
   pfr = PolyrexFeedReader.new(px)
   pfr.fetch_feeds
   pfr.refresh
-  pfr.save_xml 'feeds.xml'
+  pfr.save_xml  'feeds.xml'
   pfr.save_html 'feeds.html'
+  pfr.save_css  'feeds.css'
 
 end

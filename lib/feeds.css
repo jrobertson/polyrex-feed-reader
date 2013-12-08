@@ -1,0 +1,26 @@
+body {background-color: #39a}
+
+body>div {
+  background-color: #19b;
+  float: left;
+  width: 200px;
+  }
+
+body div div {
+  background-color: #9fa;  
+}
+
+  div div>ul {
+    background-color: #eba;  
+    list-style-type: none;
+    margin: 0.1em; padding: 0.2em;
+  }
+
+  div div>ul>li {
+    background-color: #efa;  
+  }
+
+  div div>ul>li a {
+    background-color: #aaa;  
+    text-decoration: none;
+  }

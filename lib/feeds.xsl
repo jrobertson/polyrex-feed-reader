@@ -3,28 +3,51 @@
 <xsl:output method="html" indent="yes" />
 
 <xsl:template match='feeds'>
-<xsl:element name="div">
+
+    <html>
+      <head>
+        <title><xsl:value-of select="summary/title" /></title>
+        <link rel="stylesheet" type="text/css" href="feeds.css" />
+      </head>
+      
+      <body onload="" style="font-family:helvetica,arial;">
+
     <xsl:apply-templates select='summary'/>    
     <xsl:apply-templates select='records'/>    
-</xsl:element>
+    </body>
+</html>
 </xsl:template>
+
+
 
 <xsl:template match='feeds/summary'>
   <h1><xsl:value-of select='title'/></h1>  
 </xsl:template>
 
 <xsl:template match='records/column'>
-
+<div id="{summary/id}">
     <xsl:apply-templates select='summary'/>
-    <xsl:apply-templates select='records/feed'>
-       <xsl:sort select="summary/recent" order="ascending"/>
-    </xsl:apply-templates>
-
+    <xsl:apply-templates select='records/section'/>
+</div>
 </xsl:template>
 
 <xsl:template match='column/summary'>
   <h2><xsl:value-of select='id'/></h2>
 </xsl:template>
+
+<xsl:template match='records/section'>
+<div>
+    <xsl:apply-templates select='summary'/>
+    <xsl:apply-templates select='records/feed'>
+       <xsl:sort select="summary/recent" order="ascending"/>
+    </xsl:apply-templates>
+</div>
+</xsl:template>
+
+<xsl:template match='section/summary'>
+  <h2><xsl:value-of select='title'/></h2>
+</xsl:template>
+
 
 <xsl:template match='records/feed'>
 
@@ -47,7 +70,7 @@
 </xsl:template>
 
 <xsl:template match='item/summary'>
-  <h4><xsl:value-of disable-output-escaping="yes" select='title'/></h4>
+  <a href="{link}" target="_blank"><h4><xsl:value-of disable-output-escaping="yes" select='title'/></h4></a>
   <p><xsl:value-of disable-output-escaping="yes" select='description'/></p>
 </xsl:template>
 
