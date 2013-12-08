@@ -6,23 +6,13 @@ require 'nokogiri'
 require 'rss_to_dynarex'
 require 'polyrex'
 
-class Fixnum
 
-  def ordinal
-    self.to_s + ( (10...20).include?(self) ? 'th' : 
-        %w{ th st nd rd th th th th th th }[self % 10] )
-  end
+MINUTE = 60
+HOUR = MINUTE * 60
+DAY = HOUR * 24
+WEEK = DAY * 7
+MONTH = DAY * 30
 
-  def seconds() self end
-  def minutes() self * 60 end
-  def hours()   self * seconds * 60 end
-  def days()    self *   hours * 24 end
-  def weeks()   self *    days * 7  end
-  def months()  self *    days * 30 end
-  alias second seconds; alias hour hours; alias minute minutes
-  alias day days; alias week weeks; alias month months
-
-end
 
 class PolyrexFeedReader
 
@@ -57,7 +47,7 @@ class PolyrexFeedReader
 
           filename = "%s.xml" % feed.title\
                               .downcase.gsub(/\s/,'').gsub(/\W/,'_')
-
+          puts 'filename : ' + filename.inspect
           d = Dynarex.new filename
           feed.last_accessed = datetimestamp()
           feed.last_modified = datetimestamp() if feed.last_modified.empty?
@@ -97,8 +87,8 @@ class PolyrexFeedReader
   def save_css(filepath='feeds.css')
 
     lib = File.dirname(__FILE__)
-    css_buffer = File.read(lib + '/feeds.css')
-    #css_buffer = File.read('feeds.css')
+    #xsl_buffer = File.read(lib + '/feeds.css')
+    css_buffer = File.read('feeds.css')
 
     File.write filepath, css_buffer
   end
@@ -106,8 +96,8 @@ class PolyrexFeedReader
   def save_html(filepath='feeds.html')
 
     lib = File.dirname(__FILE__)
-    xsl_buffer = File.read(lib + '/feeds.xsl')
-    #xsl_buffer = File.read('feeds.xsl')
+    #xsl_buffer = File.read(lib + '/feeds.xsl')
+    xsl_buffer = File.read('feeds.xsl')
 
     xslt  = Nokogiri::XSLT(xsl_buffer)
     html = xslt.transform(Nokogiri::XML(@polyrex.to_xml)).to_s
@@ -125,20 +115,36 @@ class PolyrexFeedReader
     hour, minutes, day, year = Time.now.to_a.values_at 2,1,3,5
     meridian, month = Time.now.strftime("%p %b").split
     "%d:%02d%s %s %s %s" % [hour, minutes, meridian.downcase, \
-                            day.ordinal, month, year]
+                            ordinal(day), month, year]
   end
+
+  def ordinal(i)
+    i.to_s + ( (10...20).include?(i) ? 'th' : 
+        %w{ th st nd rd th th th th th th }[i % 10] )
+  end
+
 
   def recency(time)
 
     case (Time.now - Time.parse(time))
-      when 1.second..5.minutes then '1hot'
-      when 5.minutes..4.hours then '2warm'
-      when 4.hours..1.week then '3cold'
-      when 1.week..1.month then '4coldx1week'
-      when 1.month..6.months then '5coldx1month'
+      when second(1)..minutes(5) then '1hot'
+      when minutes(5)..hours(4) then '2warm'
+      when hours(4)..week(1) then '3cold'
+      when week(1)..month(1) then '4coldx1week'
+      when month(1)..months(6) then '5coldx1month'
       else '6coldx6months'
     end
   end
+
+
+  def seconds(i) i end
+  def minutes(i) i * MINUTE end
+  def hours(i)   i * HOUR   end
+  def days(i)    i * DAY    end
+  def weeks(i)   i * WEEK   end
+  def months(i)  i * MONTH  end
+  alias second seconds; alias hour hours; alias minute minutes
+  alias day days; alias week weeks; alias month months
 
 end
 
