@@ -106,8 +106,8 @@ class PolyrexFeedReader
   def save_html(filepath='feeds.html')
 
     lib = File.dirname(__FILE__)
-    #xsl_buffer = File.read(lib + '/feeds.xsl')
-    xsl_buffer = File.read('feeds.xsl')
+    xsl_buffer = File.read(lib + '/feeds.xsl')
+    #xsl_buffer = File.read('feeds.xsl')
 
     xslt  = Nokogiri::XSLT(xsl_buffer)
     html = xslt.transform(Nokogiri::XML(@polyrex.to_xml)).to_s
