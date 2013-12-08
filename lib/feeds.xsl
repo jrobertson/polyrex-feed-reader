@@ -16,7 +16,9 @@
 <xsl:template match='records/column'>
 
     <xsl:apply-templates select='summary'/>
-    <xsl:apply-templates select='records'/>
+    <xsl:apply-templates select='records/feed'>
+       <xsl:sort select="summary/recent" order="ascending"/>
+    </xsl:apply-templates>
 
 </xsl:template>
 
@@ -25,12 +27,16 @@
 </xsl:template>
 
 <xsl:template match='records/feed'>
-    <xsl:apply-templates select='summary'/>
+
+    <xsl:apply-templates select='summary'>
+
+    </xsl:apply-templates>
     <ul><xsl:apply-templates select='records'/></ul>
 </xsl:template>
 
 <xsl:template match='feed/summary'>
-    <h3><xsl:value-of select='title'/></h3>
+  <h3><xsl:value-of select='title'/></h3>
+  <span><xsl:value-of select='last_modified'/></span>
 </xsl:template>
 
 <xsl:template match='records/item'>
