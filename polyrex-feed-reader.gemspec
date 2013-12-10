@@ -1,9 +1,9 @@
 Gem::Specification.new do |s|
   s.name = 'polyrex-feed-reader'
-  s.version = '0.5.4'
+  s.version = '0.5.5'
   s.summary = 'Fetches RSS feeds from a Polyrex file and displays each feed summary on an HTML page'
   s.authors = ['James Robertson']
-  s.files = Dir['lib/**/*.rb', 'lib/feeds.xsl','lib/feeds.css']
+  s.files = Dir['lib/**/*.rb', 'lib/feeds.xsl','lib/feeds.css', 'lib/dynarex-feed.xsl']
   s.add_dependency('polyrex')
   s.add_dependency('rss_to_dynarex')
   s.add_dependency('nokogiri')

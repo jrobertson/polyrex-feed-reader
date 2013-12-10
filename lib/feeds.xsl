@@ -32,7 +32,7 @@
 </xsl:template>
 
 <xsl:template match='column/summary'>
-  <h2><xsl:value-of select='id'/></h2>
+
 </xsl:template>
 
 <xsl:template match='records/section'>
@@ -50,15 +50,16 @@
 
 
 <xsl:template match='records/feed'>
-
+<div class="feed {summary/recent}">
     <xsl:apply-templates select='summary'>
 
     </xsl:apply-templates>
     <ul><xsl:apply-templates select='records'/></ul>
+</div>
 </xsl:template>
 
 <xsl:template match='feed/summary'>
-  <h3><xsl:value-of select='title'/></h3>
+  <a href="{substring-before(xhtml,'.')}.html"><h3><xsl:value-of select='title'/></h3></a>
   <span><xsl:value-of select='last_modified'/></span>
 </xsl:template>
 

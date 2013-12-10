@@ -22,63 +22,73 @@ class PolyrexFeedReader
 
   end  
 
+  def feeds_to_html()
+
+    feeds do |feed, filename|
+
+      puts "transforming %s " % filename
+      xsltproc 'dynarex-feed.xsl', File.read(filename), filename.sub(/xml$/,'html')
+    end
+  end
+
   def fetch_feeds()
 
-    feeds = @polyrex.xpath('//column/records/section/records/feed/summary')
+    feeds do |feed, filename|
 
-    feeds.each do |feed|
+      puts "fetching %s " % feed.rss_url.inspect
 
-      puts "fetching %s " % feed.text('rss_url').inspect
-
-      rtd = RSStoDynarex.new feed.text('rss_url')
+      rtd = RSStoDynarex.new feed.rss_url
       dynarex = rtd.to_dynarex
-      dynarex.save "%s.xml" % feed.text('title')\
-                          .downcase.gsub(/\s/,'').gsub(/\W/,'_')
+
+      dynarex.save(filename) do |xml| 
+        a = xml.lines.to_a
+        line1 = a.shift
+        a.unshift %Q{<?xml-stylesheet title="XSL_formatting" type="text/xsl" href="dynarex-feed.xsl"?>\n}
+        a.unshift line1
+        a.join
+      end    
     end
+
   end
 
   def refresh
 
-    @polyrex.records.each do |column|
+    feeds do |feed, filename|
 
-      column.records.each do |section| 
-   
-        section.records.each do |feed|
+      puts 'adding : ' + filename.inspect
 
-          filename = "%s.xml" % feed.title\
-                              .downcase.gsub(/\s/,'').gsub(/\W/,'_')
-          puts 'filename : ' + filename.inspect
-          d = Dynarex.new filename
-          feed.last_accessed = datetimestamp()
-          feed.last_modified = datetimestamp() if feed.last_modified.empty?
+      d = Dynarex.new filename
 
-          items = d.to_h[0..2]
+      feed.last_accessed = datetimestamp()
+      feed.last_modified = datetimestamp() if feed.last_modified.empty?
+      feed.xhtml = filename
 
-          if feed.records.length > 0 and \
-                                  items.first[:title] == feed.item[0].title then
-            feed.recent = recency(feed.last_modified)
-            next 
-          end
+      items = d.to_h[0..2]
 
-          feed.recent = '1hot'
-          feed.records.remove_all
-          items.each.with_index do |x, i|
-
-            h = {title: x[:title], link: x[:link]}
-
-            if i == 0 then
-
-              raw_desc = CGI.unescapeHTML(x[:description]).gsub(/<\/?[^>]*>/, "")
-              desc = raw_desc.length > 300 ? raw_desc[0..296] + ' ...' : raw_desc
-              h[:description] = desc
-            end
-
-            feed.create.item h
-          end
-
-          feed.last_modified = datetimestamp()
-        end
+      if feed.records.length > 0 and \
+                              items.first[:title] == feed.item[0].title then
+        feed.recent = recency(feed.last_modified)
+        next 
       end
+
+      feed.recent = 'a_hot'
+      feed.records.remove_all
+      items.each.with_index do |x, i|
+
+        h = {title: x[:title], link: "%s#%s" % [filename.sub(/xml$/,'html'),i]}
+
+        if i == 0 then
+
+          raw_desc = CGI.unescapeHTML(x[:description]).gsub(/<\/?[^>]*>/, "")
+          desc = raw_desc.length > 300 ? raw_desc[0..296] + ' ...' : raw_desc
+          h[:description] = desc
+        end
+
+        feed.create.item h
+      end
+
+      feed.last_modified = datetimestamp()
+
     end
   end
 
@@ -87,21 +97,14 @@ class PolyrexFeedReader
   def save_css(filepath='feeds.css')
 
     lib = File.dirname(__FILE__)
-    #xsl_buffer = File.read(lib + '/feeds.css')
-    css_buffer = File.read('feeds.css')
+    css_buffer = File.read(lib + '/feeds.css')
+    #css_buffer = File.read('feeds.css')
 
     File.write filepath, css_buffer
   end
 
   def save_html(filepath='feeds.html')
-
-    lib = File.dirname(__FILE__)
-    #xsl_buffer = File.read(lib + '/feeds.xsl')
-    xsl_buffer = File.read('feeds.xsl')
-
-    xslt  = Nokogiri::XSLT(xsl_buffer)
-    html = xslt.transform(Nokogiri::XML(@polyrex.to_xml)).to_s
-    File.write filepath, html
+    xsltproc 'feeds.xsl', @polyrex.to_xml, filepath
   end
 
   def save_xml(filepath='feeds.xml')
@@ -118,6 +121,23 @@ class PolyrexFeedReader
                             ordinal(day), month, year]
   end
 
+  def feeds()
+
+    @polyrex.records.each do |column|
+
+      column.records.each do |section| 
+
+        section.records.each do |feed|
+
+          filename = "%s.xml" % feed.title.downcase.gsub(/\s/,'').gsub(/\W/,'_')
+          yield(feed, filename)
+
+        end
+      end
+    end
+
+  end
+
   def ordinal(i)
     i.to_s + ( (10...20).include?(i) ? 'th' : 
         %w{ th st nd rd th th th th th th }[i % 10] )
@@ -127,15 +147,25 @@ class PolyrexFeedReader
   def recency(time)
 
     case (Time.now - Time.parse(time))
-      when second(1)..minutes(5) then '1hot'
-      when minutes(5)..hours(4) then '2warm'
-      when hours(4)..week(1) then '3cold'
-      when week(1)..month(1) then '4coldx1week'
-      when month(1)..months(6) then '5coldx1month'
-      else '6coldx6months'
+      when second(1)..minutes(5) then 'a_hot'
+      when minutes(5)..hours(4) then 'b_warm'
+      when hours(4)..week(1) then 'c_cold'
+      when week(1)..month(1) then 'd_coldx1week'
+      when month(1)..months(6) then 'e_coldx1month'
+      else 'f_coldx6months'
     end
   end
 
+  def xsltproc(xslfilename, xml, filepath='feeds.html')
+
+    lib = File.dirname(__FILE__)
+    xsl_buffer = File.read(lib + '/' + xslfilename)
+    #xsl_buffer = File.read(xslfilename)
+
+    xslt  = Nokogiri::XSLT(xsl_buffer)
+    html = xslt.transform(Nokogiri::XML(xml)).to_s
+    File.write filepath, html
+  end
 
   def seconds(i) i end
   def minutes(i) i * MINUTE end

@@ -10,17 +10,25 @@ body div div {
   background-color: #9fa;  
 }
 
-  div div>ul {
-    background-color: #eba;  
+  .feed>ul {
+    background-color: transparent;  
     list-style-type: none;
     margin: 0.1em; padding: 0.2em;
   }
 
   div div>ul>li {
-    background-color: #efa;  
+    background-color: transparent;  
   }
 
   div div>ul>li a {
     background-color: #aaa;  
     text-decoration: none;
   }
+
+
+  .a_hot {background-color: #fdd;}
+  .b_warm {background-color: #ea9;}
+  .c_cold {background-color: #aae;}
+  .d_coldx1week {background-color: #385;}
+  .e_coldx1month {background-color: #385;}
+  .f_coldx6months {background-color: #385;}
