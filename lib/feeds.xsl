@@ -11,9 +11,38 @@
       </head>
       
       <body onload="" style="font-family:helvetica,arial;">
+<div id="wrap">
+    <a name="top"/>
 
+<header>
+<a name="top"/>
     <xsl:apply-templates select='summary'/>    
-    <xsl:apply-templates select='records'/>    
+
+  <div>
+  <ul>
+   <li>hotter</li>
+   <li class="a_hot">&#160;</li>
+   <li class="b_warm">&#160;</li>
+   <li class="c_cold">&#160;</li>
+   <li class="d_coldx1week">&#160;</li>
+   <li class="e_coldx1month">&#160;</li>
+   <li class="f_coldx6months">&#160;</li>
+   <li>colder</li>
+  </ul>
+  </div>
+</header>
+   
+    <nav>
+    <a href="#top">return to top</a>
+    <ul>     
+    <xsl:for-each select="records/column/records/section/records/feed">
+      <xsl:sort select="summary/title"/>
+      <li><a href="#{summary/title}"><xsl:value-of select="summary/title"/></a></li>
+    </xsl:for-each>
+    </ul>
+    </nav>
+    <xsl:apply-templates select='records'/>
+</div>    
     </body>
 </html>
 </xsl:template>
@@ -51,6 +80,7 @@
 
 <xsl:template match='records/feed'>
 <div class="feed {summary/recent}">
+    <a name="{summary/title}"/>
     <xsl:apply-templates select='summary'>
 
     </xsl:apply-templates>

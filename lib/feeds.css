@@ -1,19 +1,100 @@
-body {background-color: #39a}
+body {background-color: #39a; margin: 0.1em; padding: 0.1em;}
 
-body>div {
-  background-color: #19b;
-  float: left;
-  width: 200px;
+#wrap{
+  background-color: transparent;
+  width: 1330px;
   }
 
-body div div {
-  background-color: #9fa;  
+header {background-color: #46b; overflow: hidden;}
+header>div {background-color: #79a; color: #389; float: right; margin-right: 4em;}
+  header>div>ul {
+    background-color: #79a;
+    list-style-type: none; 
+    margin: 0.1em;
+    padding: 0.1em;
+  }
+    header>div>ul>li {
+      background-color: #89b;
+      float: left; 
+      margin: 0em;
+      font-size: 0.8em;
+      padding: 0.2em 0.5em;
+    }
+#wrap h1 {background-color: #59a; color: #389;}
+#wrap h2 {background-color: transparent; color: #4b4;}
+
+nav {
+  background-color: transparent;
+  float: left;
+  height: 80%;
+  width: 170px;
+  margin: 0.1em;
+  overflow: auto;
+  padding: 0.1em;
+  position: fixed;
+
+  }
+  nav>a{
+    background-color: transparent;
+    display: block;
+    color: #fff;
+    margin: 0.2em; padding: 0.4em
+    }
+  nav ul{
+    background-color: transparent;
+    list-style-type: none;
+    margin: 0.2em 0.1em;
+    padding: 0.3em 0.1em;
+    }
+    nav ul li{
+      background-color: transparent;
+      display: block;
+      color: #689;
+      font-size: 0.9em;
+      margin: 0.2em;
+      padding: 0.3em;
+      }
+      nav ul li a{
+        background-color: transparent;
+        color: #dde;
+        }
+
+#wrap #c1 {
+  background-color: #19b;
+
+  margin-left: 180px;
+
+  }
+
+
+#wrap>div {
+  background-color: #19b;
+  float: left;
+  width: 190px;
+  }
+
+#wrap div div {
+  background-color: #7c8;  
+
 }
 
   .feed>ul {
     background-color: transparent;  
     list-style-type: none;
     margin: 0.1em; padding: 0.2em;
+  }
+  .feed span {
+    background-color: transparent;
+    color: #987;
+    font-size: 0.8em;  
+  }
+  .feed p {
+    background-color: transparent;
+    font-size: 0.8em;  
+  }
+  .feed h4 {
+    background-color: transparent;
+    font-size: 0.9em;  
   }
 
   div div>ul>li {
@@ -26,9 +107,9 @@ body div div {
   }
 
 
-  .a_hot {background-color: #fdd;}
-  .b_warm {background-color: #ea9;}
-  .c_cold {background-color: #aae;}
-  .d_coldx1week {background-color: #385;}
-  .e_coldx1month {background-color: #385;}
-  .f_coldx6months {background-color: #385;}
+  #wrap .a_hot {background-color: #fee;}
+  #wrap .b_warm {background-color: #edd;}
+  #wrap .c_cold {background-color: #dbc;}
+  #wrap .d_coldx1week {background-color: #cab;}
+  #wrap .e_coldx1month {background-color: #aae;}
+  #wrap .f_coldx6months {background-color: #88c;}

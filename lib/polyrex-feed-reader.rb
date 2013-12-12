@@ -33,6 +33,14 @@ class PolyrexFeedReader
 
   def fetch_feeds()
 
+w3centities =<<EOF
+<!DOCTYPE stylesheet [
+  <!ENTITY % w3centities-f PUBLIC "-//W3C//ENTITIES Combined Set//EN//XML"
+      "http://www.w3.org/2003/entities/2007/w3centities-f.ent">
+  %w3centities-f;
+]>
+EOF
+
     feeds do |feed, filename|
 
       puts "fetching %s " % feed.rss_url.inspect
@@ -44,9 +52,11 @@ class PolyrexFeedReader
         a = xml.lines.to_a
         line1 = a.shift
         a.unshift %Q{<?xml-stylesheet title="XSL_formatting" type="text/xsl" href="dynarex-feed.xsl"?>\n}
+        a.unshift w3centities
         a.unshift line1
         a.join
       end    
+
     end
 
   end
