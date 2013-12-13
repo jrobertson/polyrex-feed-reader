@@ -44,7 +44,7 @@ EOF
     feeds do |feed, filename|
 
       puts "fetching %s " % feed.rss_url.inspect
-
+      
       rtd = RSStoDynarex.new feed.rss_url
       dynarex = rtd.to_dynarex
 
@@ -140,7 +140,12 @@ EOF
         section.records.each do |feed|
 
           filename = "%s.xml" % feed.title.downcase.gsub(/\s/,'').gsub(/\W/,'_')
-          yield(feed, filename)
+
+          begin
+            yield(feed, filename)
+          rescue
+            puts ($!).inspect
+          end
 
         end
       end
