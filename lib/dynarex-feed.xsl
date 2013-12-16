@@ -39,7 +39,7 @@
 </xsl:template>
 <xsl:template match="summary">
 <div id="summary">
-<a href="{link}"><h1><xsl:value-of select="title" disable-output-escaping="true"/></h1></a>
+<a href="{link}"><h1><xsl:value-of select="title" disable-output-escaping="yes"/></h1></a>
 </div>
 </xsl:template>
 
@@ -56,9 +56,10 @@
 <xsl:for-each select="item">
 
   <li><div><a name="{@id}"/>
-    <a href="{link}"><h1><xsl:value-of select="title"/></h1></a>
+    <a href="{link}" target="_blank"><h1><xsl:value-of select="title" disable-output-escaping="yes"/></h1></a>
     <p><xsl:value-of select="description" disable-output-escaping="yes"/></p>
     <p>last updated: <xsl:value-of select="date"/></p>
+    <h2>Share</h2><textarea cols="50" rows="5">[<xsl:value-of select="title" disable-output-escaping="yes"/>](<xsl:value-of select="link" disable-output-escaping="yes"/>) via <xsl:value-of select="../../summary/title"/></textarea>
     </div>
   </li>
 

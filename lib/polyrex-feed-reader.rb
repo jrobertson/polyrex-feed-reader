@@ -5,6 +5,7 @@
 require 'nokogiri'
 require 'rss_to_dynarex'
 require 'polyrex'
+require 'time'
 
 
 MINUTE = 60
@@ -26,6 +27,7 @@ class PolyrexFeedReader
 
     feeds do |feed, filename|
 
+      next if nothing_new? feed
       puts "transforming %s " % filename
       xsltproc 'dynarex-feed.xsl', File.read(filename), filename.sub(/xml$/,'html')
     end
@@ -43,6 +45,7 @@ EOF
 
     feeds do |feed, filename|
 
+      next if nothing_new? feed
       puts "fetching %s " % feed.rss_url.inspect
       
       rtd = RSStoDynarex.new feed.rss_url
@@ -65,8 +68,6 @@ EOF
 
     feeds do |feed, filename|
 
-      puts 'adding : ' + filename.inspect
-
       d = Dynarex.new filename
 
       feed.last_accessed = datetimestamp()
@@ -81,13 +82,19 @@ EOF
         next 
       end
 
+      puts 'adding : ' + filename.inspect
+
       feed.recent = 'a_hot'
       feed.records.remove_all
       items.each.with_index do |x, i|
 
-        h = {title: x[:title], link: "%s#%s" % [filename.sub(/xml$/,'html'),i]}
+        h = {
+          title: x[:title],
+          link:  x[:link],
+          local_link: "%s#%s" % [filename.sub(/xml$/,'html'),i]
+        }
 
-        if i == 0 then
+        if i == 0 and feed.important != 'n' then
 
           raw_desc = CGI.unescapeHTML(x[:description]).gsub(/<\/?[^>]*>/, "")
           desc = raw_desc.length > 300 ? raw_desc[0..296] + ' ...' : raw_desc
@@ -151,6 +158,12 @@ EOF
       end
     end
 
+  end
+  
+  def nothing_new?(feed)
+
+    feed.occurrence == 'daily' and \
+                                Time.parse(feed.last_accessed) + DAY > Time.now
   end
 
   def ordinal(i)

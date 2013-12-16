@@ -37,7 +37,7 @@
     <ul>     
     <xsl:for-each select="records/column/records/section/records/feed">
       <xsl:sort select="summary/title"/>
-      <li><a href="#{summary/title}"><xsl:value-of select="summary/title"/></a></li>
+      <li class="{summary/recent}"><a href="#{summary/title}"><xsl:value-of select="summary/title"/></a></li>
     </xsl:for-each>
     </ul>
     </nav>
@@ -89,7 +89,7 @@
 </xsl:template>
 
 <xsl:template match='feed/summary'>
-  <a href="{substring-before(xhtml,'.')}.html"><h3><xsl:value-of select='title'/></h3></a>
+  <a href="{substring-before(xhtml,'.')}.html" target="_blank"><h3><xsl:value-of select='title'/></h3></a>
   <span><xsl:value-of select='last_modified'/></span>
 </xsl:template>
 
@@ -101,7 +101,7 @@
 </xsl:template>
 
 <xsl:template match='item/summary'>
-  <a href="{link}" target="_blank"><h4><xsl:value-of disable-output-escaping="yes" select='title'/></h4></a>
+  <a href="{local_link}" target="_blank"><h4><xsl:value-of disable-output-escaping="yes" select='title'/></h4></a>
   <p><xsl:value-of disable-output-escaping="yes" select='description'/></p>
 </xsl:template>
 

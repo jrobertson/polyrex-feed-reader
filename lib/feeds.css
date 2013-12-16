@@ -106,10 +106,13 @@ nav {
     text-decoration: none;
   }
 
-
-  #wrap .a_hot {background-color: #fee;}
-  #wrap .b_warm {background-color: #edd;}
-  #wrap .c_cold {background-color: #dbc;}
-  #wrap .d_coldx1week {background-color: #cab;}
-  #wrap .e_coldx1month {background-color: #aae;}
-  #wrap .f_coldx6months {background-color: #88c;}
+  nav>ul>li>a {text-decoration: none;}
+  #wrap div.a_hot, div>ul>li.a_hot {background-color: #fee;}
+  nav>ul>li.a_hot>a:link {background-color: transparent; border-bottom: 3px solid #fee;}
+  #wrap div.b_warm, div>ul>li.b_warm {background-color: #edd;}
+  nav>ul>li.b_warm>a:link {background-color: transparent; border-bottom: 1px solid #edd;}
+  #wrap div.c_cold, div>ul>li.c_cold {background-color: #dbc;}
+  /* nav>ul>li.c_cold>a:link {background-color: transparent; border-bottom: 1px solid #dbc;} */
+  #wrap div.d_coldx1week, div>ul>li.d_coldx1week {background-color: #cab;}
+  #wrap div.e_coldx1month, div>ul>li.e_coldx1month {background-color: #aae;}
+  #wrap div.f_coldx6months, div>ul>li.f_coldx6months {background-color: #88c;}
