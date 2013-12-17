@@ -50,7 +50,7 @@
 
 
 <xsl:template match='feeds/summary'>
-  <h1><xsl:value-of select='title'/></h1>  
+  <a href="javascript:window.location.reload()"><h1><xsl:value-of select='title'/></h1></a>
 </xsl:template>
 
 <xsl:template match='records/column'>
@@ -89,7 +89,7 @@
 </xsl:template>
 
 <xsl:template match='feed/summary'>
-  <a href="{substring-before(xhtml,'.')}.html" target="_blank"><h3><xsl:value-of select='title'/></h3></a>
+  <a href="{substring-before(xhtml,'.')}.html" target="_blank" rel="nofollow"><h3><xsl:value-of select='title'/></h3></a>
   <span><xsl:value-of select='last_modified'/></span>
 </xsl:template>
 
@@ -101,7 +101,7 @@
 </xsl:template>
 
 <xsl:template match='item/summary'>
-  <a href="{local_link}" target="_blank"><h4><xsl:value-of disable-output-escaping="yes" select='title'/></h4></a>
+  <a href="{local_link}" target="_blank" rel="nofollow"><h4><xsl:value-of disable-output-escaping="yes" select='title'/></h4></a>
   <p><xsl:value-of disable-output-escaping="yes" select='description'/></p>
 </xsl:template>
 
