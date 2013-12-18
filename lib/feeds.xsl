@@ -17,7 +17,6 @@
 <header>
 <a name="top"/>
     <xsl:apply-templates select='summary'/>    
-
   <div>
   <ul>
    <li>hotter</li>
@@ -51,6 +50,13 @@
 
 <xsl:template match='feeds/summary'>
   <a href="javascript:window.location.reload()"><h1><xsl:value-of select='title'/></h1></a>
+  <p></p>
+  <ul>
+    <li>last updated: <xsl:value-of select="last_modified"/></li>
+    <li>feed count:  <xsl:value-of select="feed_count"/></li>
+    <li><a href="feeds.opml">feeds.opml</a></li>
+    <li><a href="latest.html">latest</a></li></ul>
+
 </xsl:template>
 
 <xsl:template match='records/column'>

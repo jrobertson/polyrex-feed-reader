@@ -14,6 +14,13 @@ DAY = HOUR * 24
 WEEK = DAY * 7
 MONTH = DAY * 30
 
+W3CENTITIES =<<EOF
+<!DOCTYPE stylesheet [
+  <!ENTITY % w3centities-f PUBLIC "-//W3C//ENTITIES Combined Set//EN//XML"
+      "http://www.w3.org/2003/entities/2007/w3centities-f.ent">
+  %w3centities-f;
+]>
+EOF
 
 class PolyrexFeedReader
 
@@ -22,6 +29,10 @@ class PolyrexFeedReader
     @polyrex = polyrex
 
   end  
+
+  def feed_count()
+    @polyrex.xpath 'count(records/column/records/section/records/feed)'
+  end
 
   def feeds_to_html()
 
@@ -35,13 +46,7 @@ class PolyrexFeedReader
 
   def fetch_feeds()
 
-w3centities =<<EOF
-<!DOCTYPE stylesheet [
-  <!ENTITY % w3centities-f PUBLIC "-//W3C//ENTITIES Combined Set//EN//XML"
-      "http://www.w3.org/2003/entities/2007/w3centities-f.ent">
-  %w3centities-f;
-]>
-EOF
+
 
     feeds do |feed, filename|
 
@@ -55,7 +60,7 @@ EOF
         a = xml.lines.to_a
         line1 = a.shift
         a.unshift %Q{<?xml-stylesheet title="XSL_formatting" type="text/xsl" href="dynarex-feed.xsl"?>\n}
-        a.unshift w3centities
+        a.unshift W3CENTITIES
         a.unshift line1
         a.join
       end    
@@ -66,12 +71,14 @@ EOF
 
   def refresh
 
+    @datetimestamp = datetimestamp()
+
     feeds do |feed, filename|
 
       d = Dynarex.new filename
 
-      feed.last_accessed = datetimestamp()
-      feed.last_modified = datetimestamp() if feed.last_modified.empty?
+      feed.last_accessed = @datetimestamp
+      feed.last_modified = @datetimestamp if feed.last_modified.empty?
       feed.xhtml = filename
 
       items = d.to_h[0..2]
@@ -104,7 +111,7 @@ EOF
         feed.create.item h
       end
 
-      feed.last_modified = datetimestamp()
+      feed.last_modified = @datetimestamp
 
     end
   end
@@ -124,7 +131,52 @@ EOF
     xsltproc 'feeds.xsl', @polyrex.to_xml, filepath
   end
 
+  def save_latestnews(filename='latest.html')
+
+
+
+    last_modified = @polyrex.summary.last_modified
+    e = @polyrex.xpath 'records/column/records/section/records/'\
+      + 'feed[summary/last_modified="' + last_modified + '"]'
+
+    dynarex = Dynarex.new 'feeds/feed(source, title, link, description)'
+
+    e.each() do |feed|
+
+      summary = feed.element 'records/item/summary'
+
+      record = {
+             source: feed.text('summary/title'),
+              title: summary.text('title'),
+               link: summary.text('link'),
+        description: summary.text('description')
+      }
+      dynarex.create record
+    end
+
+    #filename = 'latest.xml'
+=begin
+    dynarex.save(filename) do |xml| 
+      a = xml.lines.to_a
+      line1 = a.shift
+      a.unshift %Q{<?xml-stylesheet title="XSL_formatting" type="text/xsl" href="latest.xsl"?>\n}
+      a.unshift W3CENTITIES
+      a.unshift line1
+      a.join
+    end
+=end
+
+    xsltproc 'latest.xsl', dynarex.to_xml, filename 
+  end
+
+  def save_opml(filepath='feeds.opml')
+    xsltproc 'opml-feeds.xsl', @polyrex.to_xml, filepath
+  end
+
   def save_xml(filepath='feeds.xml')
+    @polyrex.summary.last_modified = @datetimestamp
+    @polyrex.summary.feed_count = @polyrex.xpath \
+                'count(records/column/records/section/records/feed)'
     @polyrex.save filepath, pretty: true
   end
 
@@ -162,6 +214,7 @@ EOF
   
   def nothing_new?(feed)
 
+    feed.last_accessed = Time.now - WEEK if feed.last_accessed.empty?
     feed.occurrence == 'daily' and \
                                 Time.parse(feed.last_accessed) + DAY > Time.now
   end
@@ -183,6 +236,7 @@ EOF
       else 'f_coldx6months'
     end
   end
+
 
   def xsltproc(xslfilename, xml, filepath='feeds.html')
 
