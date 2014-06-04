@@ -80,6 +80,7 @@ class PolyrexFeedReader
       feed.last_accessed = @datetimestamp
       feed.last_modified = @datetimestamp if feed.last_modified.empty?
       feed.xhtml = filename
+      feed.url = d.summary[:link]
 
       items = d.to_h[0..2]
 
@@ -133,8 +134,6 @@ class PolyrexFeedReader
 
   def save_latestnews(filename='latest.html')
 
-
-
     last_modified = @polyrex.summary.last_modified
     e = @polyrex.xpath 'records/column/records/section/records/'\
       + 'feed[summary/last_modified="' + last_modified + '"]'
@@ -147,6 +146,7 @@ class PolyrexFeedReader
 
       record = {
              source: feed.text('summary/title'),
+        source_link: feed.text('summary/url'),
               title: summary.text('title'),
                link: summary.text('link'),
         description: summary.text('description')
@@ -154,8 +154,8 @@ class PolyrexFeedReader
       dynarex.create record
     end
 
-    #filename = 'latest.xml'
-=begin
+    filename = 'latest.xml'
+#=begin
     dynarex.save(filename) do |xml| 
       a = xml.lines.to_a
       line1 = a.shift
@@ -164,7 +164,7 @@ class PolyrexFeedReader
       a.unshift line1
       a.join
     end
-=end
+#=end
 
     xsltproc 'latest.xsl', dynarex.to_xml, filename 
   end
@@ -172,6 +172,33 @@ class PolyrexFeedReader
   def save_opml(filepath='feeds.opml')
     xsltproc 'opml-feeds.xsl', @polyrex.to_xml, filepath
   end
+
+  def save_sections()
+
+    @polyrex.records.each do |column|
+
+      column.records.each do |section|
+
+        d = Dynarex.new 'section[title]/feed(source, title, link, description)'
+        d.summary[:title] = section.title
+
+        section.records.each.with_index do |feed, i|
+
+          next if feed.item.length < 1
+          filename = "%s.html#%s" % \
+                            [feed.title.to_s.downcase.gsub(/\s/,'').gsub(/\W/,'_'), i]
+
+          h = {source: feed.title, title: feed.item[0].title, link: filename, \
+                  description: feed.item[0].description}
+          d.create h
+          puts h.inspect
+        end
+
+        filename = section.title.to_s.downcase.gsub(/\W/,'') + '.xml'
+        d.save filename
+      end
+    end
+end
 
   def save_xml(filepath='feeds.xml')
     @polyrex.summary.last_modified = @datetimestamp
@@ -198,7 +225,7 @@ class PolyrexFeedReader
 
         section.records.each do |feed|
 
-          filename = "%s.xml" % feed.title.downcase.gsub(/\s/,'').gsub(/\W/,'_')
+          filename = "%s.xml" % feed.title.to_s.downcase.gsub(/\s/,'').gsub(/\W/,'_')
 
           begin
             yield(feed, filename)
@@ -237,7 +264,6 @@ class PolyrexFeedReader
     end
   end
 
-
   def xsltproc(xslfilename, xml, filepath='feeds.html')
 
     lib = File.dirname(__FILE__)
@@ -268,5 +294,9 @@ if __FILE__ == $0 then
   pfr.save_xml  'feeds.xml'
   pfr.save_html 'feeds.html'
   pfr.save_css  'feeds.css'
+  pfr.save_latestnews 'latest.html'
+  pfr.save_opml 'feeds.opml'
+  pfr.save_sections
+  #pfr.save_latestnews_css 'latest.css'
 
 end

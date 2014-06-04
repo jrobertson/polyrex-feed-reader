@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'polyrex-feed-reader'
-  s.version = '0.5.11'
+  s.version = '0.5.14'
   s.summary = 'Fetches RSS feeds from a Polyrex file and displays each feed summary on an HTML page'
   s.authors = ['James Robertson']
   s.files = Dir[
